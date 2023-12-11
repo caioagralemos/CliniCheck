@@ -7,13 +7,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class CliniCheck {
     ArrayList<Medico> medicos = new ArrayList<>();
     ArrayList<Paciente> pacientes = new ArrayList<>();
     ArrayList<Consulta> consultas = new ArrayList<>();
+    ArrayList<String> cpfs = new ArrayList<>();
     Gson gson = new Gson();
     Scanner scanner = new Scanner(System.in);
 
@@ -37,6 +37,13 @@ public class CliniCheck {
             byte[] consultas_jsonData = Files.readAllBytes(path_consultas);
             String consultas_json = new String(consultas_jsonData);
             consultas = gson.fromJson(consultas_json, new TypeToken<ArrayList<Consulta>>(){}.getType());
+        } catch (Exception ignored) {}
+
+        try {
+            Path path_cpfs = Paths.get("./cpfs.json");
+            byte[] cpfs_jsonData = Files.readAllBytes(path_cpfs);
+            String cpfs_json = new String(cpfs_jsonData);
+            cpfs = gson.fromJson(cpfs_json, new TypeToken<ArrayList<String>>(){}.getType());
         } catch (Exception ignored) {}
 
         userInterface();
@@ -117,6 +124,16 @@ public class CliniCheck {
                         }
                     }
 
+                    if (!cpfs.isEmpty()) {
+                        String json_cpfs = gson.toJson(cpfs);
+                        try (FileWriter fileWriter = new FileWriter("./cpfs.json")) {
+                            fileWriter.write(json_cpfs);
+                            output("CPFS salvos com sucesso.");
+                        } catch (IOException e) {
+                            output("Não foi possível salvar seus CPFS.");
+                        }
+                    }
+
                     output("Obrigado por utilizar o CliniCheck.");
                     break;
                 }
@@ -143,6 +160,11 @@ public class CliniCheck {
             if(cpf.equals("/menu")) {
                 return;
             }
+        }
+
+        if (cpfs.contains(cpf)) {
+            output("Esse CPF já possui cadastro no sistema.");
+            return;
         }
 
         output("Digite o CRM do médico: ");
@@ -183,10 +205,9 @@ public class CliniCheck {
             }
         }
 
-        ArrayList<Data> horarios_marcados = new ArrayList<>();
-
-        Medico novo_medico = new Medico(nome, cpf, crm, salario, especialidades, horarios_marcados);
+        Medico novo_medico = new Medico(nome, cpf, crm, salario, especialidades, new ArrayList<>());
         medicos.add(novo_medico);
+        cpfs.add(cpf);
         output("Médico adicionado com sucesso.");
     }
 
@@ -209,6 +230,11 @@ public class CliniCheck {
             if(cpf.equals("/menu")) {
                 return;
             }
+        }
+
+        if (cpfs.contains(cpf)) {
+            output("Esse CPF já possui cadastro no sistema.");
+            return;
         }
 
         output("Digite o número do Cartão SUS do paciente: ");
@@ -238,7 +264,8 @@ public class CliniCheck {
             }
         }
 
-        Paciente novo_paciente = new Paciente(nome, cpf, cartao_sus, laudo);
+        Paciente novo_paciente = new Paciente(nome, cpf, cartao_sus, laudo, new ArrayList<>());
+        cpfs.add(cpf);
         pacientes.add(novo_paciente);
         output("Paciente adicionado com sucesso.");
     }
@@ -285,9 +312,87 @@ public class CliniCheck {
             return;
         }
 
-        Data data = new Data();
+        // Data
+        Data data_da_consulta;
+        while (true) {
+            try {
+                output("Digite o dia de sua consulta: ");
+                int dia = Integer.parseInt(scanner.nextLine());
 
-        Consulta nova_consulta = new Consulta(consultas.size(), medico, paciente, doenca, data);
+                output("Digite o mês de sua consulta: ");
+                int mes = Integer.parseInt(scanner.nextLine());
+
+                output("Digite o ano de sua consulta: ");
+                int ano = Integer.parseInt(scanner.nextLine());
+
+                data_da_consulta = new Data(dia, mes, ano);
+                break;
+            } catch (Error e) {
+                output("Algo deu errado. Tente novamente");
+            }
+        }
+
+        ArrayList<Integer> horas_disponiveis = new ArrayList<>();
+        horas_disponiveis.add(8);
+        horas_disponiveis.add(9);
+        horas_disponiveis.add(10);
+        horas_disponiveis.add(11);
+        horas_disponiveis.add(14);
+        horas_disponiveis.add(15);
+        horas_disponiveis.add(16);
+        horas_disponiveis.add(17);
+
+        ArrayList<Integer> horas_indisponiveis = new ArrayList<>();
+
+        for (Data d: medico.horarios_marcados) {
+            if(d.dia == data_da_consulta.dia && d.mes == data_da_consulta.mes && d.ano == data_da_consulta.ano) {
+                if (horas_disponiveis.contains(d.hora)) {
+                    horas_indisponiveis.add(d.hora);
+                }
+            }
+        }
+
+        if (!horas_indisponiveis.isEmpty()) {
+            for (Integer hora: horas_indisponiveis) {
+                horas_disponiveis.remove(hora);
+            }
+        }
+
+        if (horas_disponiveis.isEmpty()) {
+            output("Esse médico não tem horários disponiveis nesse dia. Tente novamente mais tarde ou com outra data");
+            return;
+        }
+
+        while (true) {
+            try {
+                output("Horas disponíveis:");
+                int contador = 1;
+                for (Integer hora: horas_disponiveis) {
+                    if (hora < 10) {
+                        System.out.print(contador + " -  0" + hora + ":00 |");
+                    } else {
+                        System.out.print(contador + " - " + hora + ":00 |");
+                    }
+                    contador++;
+                }
+
+                System.out.print(" Escolha seu horário pelo índice: ");
+                int choice = Integer.parseInt(scanner.nextLine());
+                data_da_consulta.setHora(horas_disponiveis.get(choice-1));
+
+                if (!paciente.horarios_marcados.contains(data_da_consulta)) {
+                    medico.horarios_marcados.add(data_da_consulta);
+                    paciente.horarios_marcados.add(data_da_consulta);
+                    break;
+                } else {
+                    throw new Error();
+                }
+            } catch (Error e) {
+                output("Algo deu errado. Tente novamente");
+            }
+        }
+
+        Consulta nova_consulta = new Consulta(consultas.size(), medico, paciente, doenca, data_da_consulta);
         consultas.add(nova_consulta);
         output("Consulta adicionada com sucesso.");
         System.out.println(nova_consulta);
