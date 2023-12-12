@@ -9,7 +9,7 @@ public class Conta {
     String user;
     String password;
 
-    public Conta(String user, String password) throws Exception {
+    public Conta(String user, String password) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < password.length(); i++) {
             char c = password.charAt(i);
@@ -19,7 +19,7 @@ public class Conta {
         this.user = user.toLowerCase();
     }
 
-    public boolean login() throws Exception {
+    public boolean login() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Digite a senha de sua conta: ");
         String password = scanner.nextLine();
