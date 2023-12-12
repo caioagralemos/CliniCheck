@@ -261,8 +261,12 @@ public class CliniCheck {
             }
 
             if (!especialidade.isBlank()) {
-                contador++;
-                especialidades.add(especialidade);
+                if(!especialidades.contains(especialidade)) {
+                    contador++;
+                    especialidades.add(especialidade);
+                } else {
+                    output("Médico já possui essa especialidade.");
+                }
             }
         }
 
@@ -320,8 +324,12 @@ public class CliniCheck {
             }
 
             if (!doenca.isBlank()) {
-                contador++;
-                laudo.add(doenca);
+                if(!laudo.contains(doenca)) {
+                    contador++;
+                    laudo.add(doenca);
+                } else {
+                    output("Paciente já tem essa doença registrada no laudo.");
+                }
             }
         }
 
@@ -781,8 +789,12 @@ public class CliniCheck {
                 }
 
                 if (!especialidade.isBlank()) {
-                    contador++;
-                    medico.especialidade.add(especialidade);
+                    if(!medico.especialidade.contains(especialidade)) {
+                        contador++;
+                        medico.especialidade.add(especialidade);
+                    } else {
+                        output("Médico já possui essa especialidade.");
+                    }
                 }
             }
         } else {
@@ -855,8 +867,12 @@ public class CliniCheck {
                 }
 
                 if (!doenca.isBlank()) {
-                    contador++;
-                    paciente.laudo.add(doenca);
+                    if(!paciente.laudo.contains(doenca)) {
+                        contador++;
+                        paciente.laudo.add(doenca);
+                    } else {
+                        output("Paciente já tem essa doença registrada no laudo.");
+                    }
                 }
             }
         } else {
