@@ -110,8 +110,8 @@ public class CliniCheck {
 
             System.out.println("1 - Marcar Consulta");
             System.out.println("2 - Ver Consultas");
-            System.out.println("3 - Adicionar Médicos");
-            System.out.println("4 - Adicionar Pacientes");
+            System.out.println("3 - Adicionar Médico");
+            System.out.println("4 - Adicionar Paciente");
             System.out.println("5 - Gerenciar Dados");
             System.out.println("S - Fechar e Salvar Alterações\n");
 
@@ -364,6 +364,7 @@ public class CliniCheck {
                     escolha = Integer.parseInt(scanner.nextLine().strip());
                     if(escolha <= (paciente.laudo.size()+1) && escolha > 0) {
                         doenca = paciente.laudo.get(escolha-1);
+                        System.out.println();
                         break;
                     } else {
                         throw new Exception();
@@ -380,6 +381,7 @@ public class CliniCheck {
         if(medico == null) {
             return;
         }
+        System.out.println();
 
         // Data
         Data data_da_consulta;
@@ -395,6 +397,7 @@ public class CliniCheck {
                 int ano = Integer.parseInt(scanner.nextLine());
 
                 data_da_consulta = new Data(dia, mes, ano);
+                System.out.println();
                 break;
             } catch (Error e) {
                 output("Algo deu errado. Tente novamente");
@@ -428,7 +431,7 @@ public class CliniCheck {
         }
 
         if (horas_disponiveis.isEmpty()) {
-            output("Esse médico não tem horários disponiveis nesse dia. Tente novamente mais tarde ou com outra data");
+            output("Esse médico não tem horários disponiveis nesse dia. Tente novamente mais tarde ou com outra data.\n");
             return;
         }
 
@@ -457,14 +460,14 @@ public class CliniCheck {
                     throw new Error();
                 }
             } catch (Error e) {
-                output("Algo deu errado. Tente novamente");
+                output("Algo deu errado. Tente novamente\n");
             }
         }
 
         usuario.setContador();
         Consulta nova_consulta = new Consulta(usuario.contador_consultas, medico, paciente, doenca, data_da_consulta);
         consultas.add(nova_consulta);
-        output("Consulta adicionada com sucesso.");
+        output("Consulta adicionada com sucesso.\n");
         System.out.println(nova_consulta);
     }
 
@@ -475,7 +478,7 @@ public class CliniCheck {
         }
         Paciente paciente = null;
         while (true) {
-            output("Identificando Paciente - digite 1 para CPF ou 2 para SUS: ");
+            System.out.print("Identificando Paciente - digite 1 para CPF ou 2 para SUS: ");
             String escolha_paciente = scanner.nextLine().strip();
             while (!escolha_paciente.equals("1") && !escolha_paciente.equals("2")) {
                 output("Algo deu errado.");
@@ -521,10 +524,10 @@ public class CliniCheck {
                 }
             }
             if (paciente != null) {
-                output("Paciente " + paciente.getNome() + " registrado com sucesso.");
+                output("Paciente " + paciente.getNome() + " registrado com sucesso.\n");
                 break;
             } else {
-                output("Não foi possível encontrar paciente com esse CPF ou cartão SUS.");
+                output("Não foi possível encontrar paciente com esse CPF ou cartão SUS.\n");
             }
         }
         return paciente;
@@ -537,7 +540,7 @@ public class CliniCheck {
         }
         Medico medico = null;
         while (true) {
-            output("Identificando Médico - digite 1 para CPF ou 2 para CRM: ");
+            System.out.print("Identificando Médico - digite 1 para CPF ou 2 para CRM: ");
             String escolha_medico = scanner.nextLine().strip();
             while (!escolha_medico.equals("1") && !escolha_medico.equals("2")) {
                 output("Algo deu errado.");
@@ -584,18 +587,18 @@ public class CliniCheck {
             }
             if(medico != null) {
                 if (doenca.isBlank()) {
-                    output("Médico(a) " + medico.getNome() + " registrado(a) com sucesso.");
+                    output("Médico(a) " + medico.getNome() + " registrado(a) com sucesso.\n");
                     break;
                 } else {
                     if (medico.especialidade.contains(doenca)) {
-                        output("Médico(a) " + medico.getNome() + " registrado(a) com sucesso.");
+                        output("Médico(a) " + medico.getNome() + " registrado(a) com sucesso.\n");
                         break;
                     } else {
-                        output("Esse médico(a) " + medico.getNome() + " não atende consultas de " + doenca + ".");
+                        output("Esse médico(a) " + medico.getNome() + " não atende consultas de " + doenca + ".\n");
                     }
                 }
             } else {
-                output("Não foi possível encontrar médico com esse CPF ou CRM.");
+                output("Não foi possível encontrar médico com esse CPF ou CRM.\n");
             }
         }
         return medico;
@@ -815,6 +818,7 @@ public class CliniCheck {
                         escolha2 = Integer.parseInt(scanner.nextLine().strip());
                         if(escolha2 <= (medico.especialidade.size()+1) && escolha2 > 0) {
                             medico.especialidade.remove(escolha2-1);
+                            output("Especialidade removida com sucesso.");
                             break;
                         } else {
                             throw new Exception();
@@ -893,6 +897,7 @@ public class CliniCheck {
                         escolha2 = Integer.parseInt(scanner.nextLine().strip());
                         if(escolha2 <= (paciente.laudo.size()+1) && escolha2 > 0) {
                             paciente.laudo.remove(escolha2-1);
+                            output("Doença removida com sucesso.");
                             break;
                         } else {
                             throw new Exception();
