@@ -1,5 +1,7 @@
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,37 +12,96 @@ import java.util.Scanner;
 import java.util.Comparator;
 
 public class CliniCheck {
+    ArrayList<Conta> contas = new ArrayList<>();
     ArrayList<Medico> medicos = new ArrayList<>();
     ArrayList<Paciente> pacientes = new ArrayList<>();
     ArrayList<Consulta> consultas = new ArrayList<>();
     ArrayList<String> cpfs = new ArrayList<>();
+    Conta usuario;
     Gson gson = new Gson();
     Scanner scanner = new Scanner(System.in);
 
     public CliniCheck() {
         try {
-            Path path_medicos = Paths.get("./medicos.json");
+            Path path_contas = Paths.get("./data/contas.json");
+            byte[] contas_jsonData = Files.readAllBytes(path_contas);
+            String contas_json = new String(contas_jsonData);
+            contas = gson.fromJson(contas_json, new TypeToken<ArrayList<Conta>>(){}.getType());
+        } catch (Exception ignored) {}
+
+        System.out.println("\nBem vindo(a) ao CliniCheck.");
+        System.out.println("CliniCheck é uma aplicação de recepção de policlínica.");
+        System.out.println("Use-o para gerenciar e marcar novas consultas.\n");
+
+        while (true) {
+            System.out.print("Digite o nome de usuário: ");
+            String username = scanner.nextLine().strip().toLowerCase();
+
+            if (!contas.isEmpty()) {
+                for(Conta c: contas) {
+                    if (c.user.equals(username)) {
+                        try {
+                            if (c.login()) {
+                                usuario = c;
+                            } else {
+                                output("Senha incorreta. Tente novamente");
+                            }
+                        } catch (Exception e) {
+                            output("Senha incorreta. Tente novamente");
+                        }
+                    } else {
+                        output("Não foi encontrada uma conta com esse nome. Criando nova conta");
+                        System.out.print("Digite sua nova senha: ");
+                        String password = scanner.nextLine();
+                        try {
+                            Conta novo_user = new Conta(username, password);
+                            contas.add(novo_user);
+                            usuario = novo_user;
+                            break;
+                        } catch (Exception e) {
+                            output("Algo deu errado. Tente novamente");
+                        }
+                    }
+                }
+            } else {
+                output("Não foi encontrada uma conta com esse nome. Criando nova conta");
+                System.out.print("Digite sua nova senha: ");
+                String password = scanner.nextLine();
+                try {
+                    Conta novo_user = new Conta(username, password);
+                    contas.add(novo_user);
+                    usuario = novo_user;
+                    break;
+                } catch (Exception e) {
+                    output("Algo deu errado. Tente novamente");
+                }
+            }
+            break;
+        }
+
+        try {
+            Path path_medicos = Paths.get("./data/" + usuario.user + "m.json");
             byte[] medicos_jsonData = Files.readAllBytes(path_medicos);
             String medicos_json = new String(medicos_jsonData);
             medicos = gson.fromJson(medicos_json, new TypeToken<ArrayList<Medico>>(){}.getType());
         } catch (Exception ignored) {}
 
         try {
-            Path path_pacientes = Paths.get("./pacientes.json");
+            Path path_pacientes = Paths.get("./data/" + usuario.user + "p.json");
             byte[] pacientes_jsonData = Files.readAllBytes(path_pacientes);
             String pacientes_json = new String(pacientes_jsonData);
             pacientes = gson.fromJson(pacientes_json, new TypeToken<ArrayList<Paciente>>(){}.getType());
         } catch (Exception ignored) {}
 
         try {
-            Path path_consultas = Paths.get("./consultas.json");
+            Path path_consultas = Paths.get("./data/" + usuario.user + "c.json");
             byte[] consultas_jsonData = Files.readAllBytes(path_consultas);
             String consultas_json = new String(consultas_jsonData);
             consultas = gson.fromJson(consultas_json, new TypeToken<ArrayList<Consulta>>(){}.getType());
         } catch (Exception ignored) {}
 
         try {
-            Path path_cpfs = Paths.get("./cpfs.json");
+            Path path_cpfs = Paths.get("./data/" + usuario.user + "cpfs.json");
             byte[] cpfs_jsonData = Files.readAllBytes(path_cpfs);
             String cpfs_json = new String(cpfs_jsonData);
             cpfs = gson.fromJson(cpfs_json, new TypeToken<ArrayList<String>>(){}.getType());
@@ -54,9 +115,7 @@ public class CliniCheck {
     }
 
     private void userInterface() {
-        System.out.println("\nBem vindo(a) ao CliniCheck.\n");
-        System.out.println("CliniCheck é uma aplicação de recepção de policlínica.");
-        System.out.println("Use-o para gerenciar e marcar novas consultas.");
+        output("Logado com sucesso! Bem vindo(a), " + usuario.user);
 
         while (true) {
             System.out.println();
@@ -94,11 +153,24 @@ public class CliniCheck {
                 if (escolha2.equals("S")) {
                     output("Tentando salvar os seus dados...");
 
+                    File userFolder = new File("./data");
+                    if (!userFolder.exists()) {
+                        userFolder.mkdirs();
+                    }
+
+                    if(!contas.isEmpty()) {
+                        String json_contas = gson.toJson(contas);
+                        try (FileWriter fileWriter = new FileWriter("./data/contas.json")) {
+                            fileWriter.write(json_contas);
+                        } catch (IOException e) {
+                            output("Não foi possível salvar suas contas.");
+                        }
+                    }
+
                     if(!consultas.isEmpty()) {
                         String json_consultas = gson.toJson(consultas);
-                        try (FileWriter fileWriter = new FileWriter("./consultas.json")) {
+                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "c.json")) {
                             fileWriter.write(json_consultas);
-                            output("Consultas salvas com sucesso.");
                         } catch (IOException e) {
                             output("Não foi possível salvar suas consultas.");
                         }
@@ -106,9 +178,8 @@ public class CliniCheck {
 
                     if(!medicos.isEmpty()) {
                         String json_medicos = gson.toJson(medicos);
-                        try (FileWriter fileWriter = new FileWriter("./medicos.json")) {
+                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "m.json")) {
                             fileWriter.write(json_medicos);
-                            output("Médicos salvos com sucesso.");
                         } catch (IOException e) {
                             output("Não foi possível salvar seus médicos.");
                         }
@@ -116,9 +187,8 @@ public class CliniCheck {
 
                     if (!pacientes.isEmpty()) {
                         String json_pacientes = gson.toJson(pacientes);
-                        try (FileWriter fileWriter = new FileWriter("./pacientes.json")) {
+                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "p.json")) {
                             fileWriter.write(json_pacientes);
-                            output("Pacientes salvos com sucesso.");
                         } catch (IOException e) {
                             output("Não foi possível salvar seus pacientes.");
                         }
@@ -126,9 +196,8 @@ public class CliniCheck {
 
                     if (!cpfs.isEmpty()) {
                         String json_cpfs = gson.toJson(cpfs);
-                        try (FileWriter fileWriter = new FileWriter("./cpfs.json")) {
+                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "cpfs.json")) {
                             fileWriter.write(json_cpfs);
-                            output("CPFS salvos com sucesso.");
                         } catch (IOException e) {
                             output("Não foi possível salvar seus CPFS.");
                         }
