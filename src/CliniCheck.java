@@ -47,19 +47,6 @@ public class CliniCheck {
                         } else {
                             output("Senha incorreta. Tente novamente\n");
                         }
-                    } else {
-                        output("Não foi encontrada uma conta com esse nome. Criando nova conta");
-                        System.out.print("Digite sua nova senha: ");
-                        String password = scanner.nextLine();
-                        try {
-                            Conta novo_user = new Conta(username, password);
-                            contas.add(novo_user);
-                            usuario = novo_user;
-                            off = true;
-                            break;
-                        } catch (Exception e) {
-                            output("Algo deu errado. Tente novamente");
-                        }
                     }
                 }
             } else {
@@ -80,28 +67,28 @@ public class CliniCheck {
         }
 
         try {
-            Path path_medicos = Paths.get("./data/" + usuario.user + "m.json");
+            Path path_medicos = Paths.get("./data/" + usuario.user + "/m.json");
             byte[] medicos_jsonData = Files.readAllBytes(path_medicos);
             String medicos_json = new String(medicos_jsonData);
             medicos = gson.fromJson(medicos_json, new TypeToken<ArrayList<Medico>>(){}.getType());
         } catch (Exception ignored) {}
 
         try {
-            Path path_pacientes = Paths.get("./data/" + usuario.user + "p.json");
+            Path path_pacientes = Paths.get("./data/" + usuario.user + "/p.json");
             byte[] pacientes_jsonData = Files.readAllBytes(path_pacientes);
             String pacientes_json = new String(pacientes_jsonData);
             pacientes = gson.fromJson(pacientes_json, new TypeToken<ArrayList<Paciente>>(){}.getType());
         } catch (Exception ignored) {}
 
         try {
-            Path path_consultas = Paths.get("./data/" + usuario.user + "c.json");
+            Path path_consultas = Paths.get("./data/" + usuario.user + "/c.json");
             byte[] consultas_jsonData = Files.readAllBytes(path_consultas);
             String consultas_json = new String(consultas_jsonData);
             consultas = gson.fromJson(consultas_json, new TypeToken<ArrayList<Consulta>>(){}.getType());
         } catch (Exception ignored) {}
 
         try {
-            Path path_cpfs = Paths.get("./data/" + usuario.user + "cpfs.json");
+            Path path_cpfs = Paths.get("./data/" + usuario.user + "/cpfs.json");
             byte[] cpfs_jsonData = Files.readAllBytes(path_cpfs);
             String cpfs_json = new String(cpfs_jsonData);
             cpfs = gson.fromJson(cpfs_json, new TypeToken<ArrayList<String>>(){}.getType());
@@ -153,9 +140,14 @@ public class CliniCheck {
                 if (escolha2.equals("S")) {
                     output("Tentando salvar os seus dados...");
 
-                    File userFolder = new File("./data");
-                    if (!userFolder.exists()) {
-                        userFolder.mkdirs();
+                    File dataFolder = new File("./data");
+                    if (!dataFolder.exists()) {
+                        dataFolder.mkdir();
+                    }
+
+                    File userFolder = new File("./data/" + this.usuario.user);
+                    if(!userFolder.exists()) {
+                        userFolder.mkdir();
                     }
 
                     if(!contas.isEmpty()) {
@@ -169,7 +161,7 @@ public class CliniCheck {
 
                     if(!consultas.isEmpty()) {
                         String json_consultas = gson.toJson(consultas);
-                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "c.json")) {
+                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "/c.json")) {
                             fileWriter.write(json_consultas);
                         } catch (IOException e) {
                             output("Não foi possível salvar suas consultas.");
@@ -178,7 +170,7 @@ public class CliniCheck {
 
                     if(!medicos.isEmpty()) {
                         String json_medicos = gson.toJson(medicos);
-                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "m.json")) {
+                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "/m.json")) {
                             fileWriter.write(json_medicos);
                         } catch (IOException e) {
                             output("Não foi possível salvar seus médicos.");
@@ -187,7 +179,7 @@ public class CliniCheck {
 
                     if (!pacientes.isEmpty()) {
                         String json_pacientes = gson.toJson(pacientes);
-                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "p.json")) {
+                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "/p.json")) {
                             fileWriter.write(json_pacientes);
                         } catch (IOException e) {
                             output("Não foi possível salvar seus pacientes.");
@@ -196,7 +188,7 @@ public class CliniCheck {
 
                     if (!cpfs.isEmpty()) {
                         String json_cpfs = gson.toJson(cpfs);
-                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "cpfs.json")) {
+                        try (FileWriter fileWriter = new FileWriter("./data/" + usuario.user + "/cpfs.json")) {
                             fileWriter.write(json_cpfs);
                         } catch (IOException e) {
                             output("Não foi possível salvar seus CPFS.");
@@ -705,7 +697,7 @@ public class CliniCheck {
             System.out.println("4 - Editar Pacientes (laudos)");
             System.out.println("5 - Excluir Médicos");
             System.out.println("6 - Excluir Pacientes");
-            System.out.println("7 - Remover Consultas");
+            System.out.println("7 - Remover Consultas\n");
 
             System.out.print("Digite aqui: ");
             escolha = scanner.nextLine();
