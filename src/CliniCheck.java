@@ -453,7 +453,8 @@ public class CliniCheck {
             }
         }
 
-        Consulta nova_consulta = new Consulta(consultas.size(), medico, paciente, doenca, data_da_consulta);
+        usuario.setContador();
+        Consulta nova_consulta = new Consulta(usuario.contador_consultas, medico, paciente, doenca, data_da_consulta);
         consultas.add(nova_consulta);
         output("Consulta adicionada com sucesso.");
         System.out.println(nova_consulta);

@@ -1,13 +1,9 @@
-import javax.crypto.*;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Conta {
     String user;
     String password;
+    int contador_consultas;
 
     public Conta(String user, String password) {
         StringBuilder sb = new StringBuilder();
@@ -17,6 +13,7 @@ public class Conta {
         }
         this.password = sb.toString();
         this.user = user.toLowerCase();
+        this.contador_consultas = 0;
     }
 
     public boolean login() {
@@ -32,4 +29,7 @@ public class Conta {
         return password.equals(this.password);
     }
 
+    public void setContador() {
+        this.contador_consultas++;
+    }
 }
